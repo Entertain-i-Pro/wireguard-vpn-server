@@ -1,59 +1,141 @@
 #!/bin/bash
 
-# WireGuard & Firewall-Setup mit SSH-Port-Änderung
+# WireGuard & Firewall-Setup mit SSH-Port-Änderung & Unbound DNS-Server
 # Erstellt von ChatGPT
+#
+# Dieses Skript installiert und konfiguriert automatisch einen sicheren WireGuard VPN-Server mit Unbound DNS.
+# Es richtet außerdem eine Firewall mit iptables ein und stellt sicher, dass der SSH-Zugriff über Port 1337 läuft.
+#
+# Deutsche Tastatur aktivieren
+loadkeys de
 
-echo "📌 1. WireGuard & benötigte Pakete installieren..."
-apt update && apt install -y wireguard iptables-persistent
+SERVER_WG_IP="10.0.0.1"
+CLIENT_WG_IP="10.0.0.2"
+WG_PORT="51820"
+SSH_PORT="1337"
+SERVER_INTERFACE="eth0"
 
-echo "🔑 2. WireGuard Schlüssel generieren..."
+# Root-Rechte überprüfen
+if [ "$EUID" -ne 0 ]; then
+    echo "❌ Dieses Skript muss als Root ausgeführt werden!"
+    exit 1
+fi
+
+echo "📸 1. Unbound installieren & einrichten..."
+apt update && apt install -y unbound dnsutils
+
+cat <<EOF > /etc/unbound/unbound.conf.d/wireguard.conf
+server:
+    interface: 0.0.0.0
+    access-control: 10.0.0.0/24 allow
+    access-control: 127.0.0.0/8 allow
+    do-ip6: no
+    root-hints: "/var/lib/unbound/root.hints"
+    cache-min-ttl: 3600
+    cache-max-ttl: 86400
+    val-permissive-mode: no
+    harden-dnssec-stripped: yes
+    use-caps-for-id: yes
+    num-threads: 2
+    so-rcvbuf: 4m
+    so-sndbuf: 4m
+EOF
+
+# Root-DNS-Server aktualisieren
+curl -o /var/lib/unbound/root.hints https://www.internic.net/domain/named.cache
+systemctl enable --now unbound
+systemctl restart unbound
+
+# Testen ob Unbound läuft
+if ! systemctl is-active --quiet unbound; then
+    echo "❌ Unbound ist nicht aktiv! Logs anzeigen..."
+    journalctl -u unbound --no-pager | tail -n 20
+    exit 1
+fi
+
+echo "📌 2. WireGuard & benötigte Pakete installieren..."
+apt install -y wireguard iptables-persistent
+
+echo "🔑 3. WireGuard Schlüssel für Server & Client generieren..."
 mkdir -p /etc/wireguard
 cd /etc/wireguard
 umask 077
-wg genkey | tee privatekey | wg pubkey > publickey
 
-PRIVATE_KEY=$(cat privatekey)
-PUBLIC_KEY=$(cat publickey)
+wg genkey | tee server_private.key | wg pubkey > server_public.key
+wg genkey | tee client_private.key | wg pubkey > client_public.key
 
-echo "📝 3. WireGuard-Konfiguration erstellen..."
+SERVER_PRIVATE_KEY=$(cat server_private.key)
+SERVER_PUBLIC_KEY=$(cat server_public.key)
+CLIENT_PRIVATE_KEY=$(cat client_private.key)
+CLIENT_PUBLIC_KEY=$(cat client_public.key)
+
+echo "📝 4. WireGuard-Server Konfiguration erstellen..."
 cat <<EOF > /etc/wireguard/wg0.conf
 [Interface]
-Address = 10.0.0.1/24
-ListenPort = 51820
-PrivateKey = $PRIVATE_KEY
-PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -A FORWARD -o wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -D FORWARD -o wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+Address = $SERVER_WG_IP/24
+ListenPort = $WG_PORT
+PrivateKey = $SERVER_PRIVATE_KEY
+PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -A FORWARD -o wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o $SERVER_INTERFACE -j MASQUERADE
+PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -D FORWARD -o wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o $SERVER_INTERFACE -j MASQUERADE
 SaveConfig = false
+
+[Peer]
+PublicKey = $CLIENT_PUBLIC_KEY
+AllowedIPs = $CLIENT_WG_IP/32
 EOF
 
-echo "🌐 4. IP-Forwarding aktivieren..."
-echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+echo "🌐 5. IP-Forwarding aktivieren..."
+if ! grep -q "net.ipv4.ip_forward=1" /etc/sysctl.conf; then
+    echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+fi
 sysctl -p
 
-echo "🛡️ 5. Firewall-Regeln setzen..."
-iptables -A INPUT -p udp --dport 51820 -j ACCEPT
+echo "🛡️ 6. Firewall-Regeln setzen..."
+if ! iptables -C INPUT -p udp --dport $WG_PORT -j ACCEPT 2>/dev/null; then
+    iptables -A INPUT -p udp --dport $WG_PORT -j ACCEPT
+fi
 iptables -A INPUT -i wg0 -j ACCEPT
 iptables -A FORWARD -i wg0 -j ACCEPT
 iptables -A FORWARD -o wg0 -j ACCEPT
-iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+iptables -t nat -A POSTROUTING -o $SERVER_INTERFACE -j MASQUERADE
 
 # Regeln dauerhaft speichern
 netfilter-persistent save
 netfilter-persistent reload
 
-echo "🚀 6. WireGuard-Dienst starten..."
+echo "🚀 7. WireGuard-Dienst starten..."
 systemctl enable wg-quick@wg0
-systemctl start wg-quick@wg0
+systemctl restart wg-quick@wg0
 
-echo "🔄 7. SSH-Port auf 1337 ändern..."
-sed -i 's/^#Port 22/Port 1337/' /etc/ssh/sshd_config
-sed -i 's/^Port 22/Port 1337/' /etc/ssh/sshd_config
+echo "📄 8. WireGuard-Client Konfiguration erstellen..."
+cat <<EOF > /etc/wireguard/wg-client.conf
+[Interface]
+PrivateKey = $CLIENT_PRIVATE_KEY
+Address = $CLIENT_WG_IP/24
+DNS = 10.0.0.1
 
-echo "🛡️ 8. Firewall für SSH anpassen..."
-ufw allow 1337/tcp
-ufw delete allow 22/tcp
+[Peer]
+PublicKey = $SERVER_PUBLIC_KEY
+Endpoint = $(curl -s ifconfig.me):$WG_PORT
+AllowedIPs = 0.0.0.0/0, ::/0
+PersistentKeepalive = 25
+EOF
 
-echo "🔄 9. SSH-Dienst neu starten..."
+echo "📸 9. QR-Code für Mobile Clients generieren..."
+qrencode -t ansiutf8 < /etc/wireguard/wg-client.conf
+
+echo "🔄 10. SSH-Port auf 1337 ändern..."
+sed -i 's/^#Port 22/Port '$SSH_PORT'/' /etc/ssh/sshd_config
+sed -i 's/^Port 22/Port '$SSH_PORT'/' /etc/ssh/sshd_config
+
+echo "🛡️ 11. Firewall für SSH anpassen..."
+iptables -A INPUT -p tcp --dport $SSH_PORT -j ACCEPT
+iptables -D INPUT -p tcp --dport 22 -j ACCEPT
+
+# Regeln dauerhaft speichern
+netfilter-persistent save
+
+echo "🔄 12. SSH-Dienst neu starten..."
 systemctl restart ssh
 
-echo "✅ Setup abgeschlossen! Bitte teste SSH auf Port 1337 und starte den Server neu."
+echo "✅ Setup abgeschlossen! Dein WireGuard-VPN mit Unbound-DNS läuft jetzt!"
