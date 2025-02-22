@@ -22,7 +22,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 echo "📸 1. Unbound installieren & einrichten..."
-apt update && apt install -y unbound dnsutils
+apt update && apt install -y unbound dnsutils speedtest-cli
 
 cat <<EOF > /etc/unbound/unbound.conf.d/wireguard.conf
 server:
@@ -139,3 +139,7 @@ echo "🔄 12. SSH-Dienst neu starten..."
 systemctl restart ssh
 
 echo "✅ Setup abgeschlossen! Dein WireGuard-VPN mit Unbound-DNS läuft jetzt!"
+
+echo "🚀 Starte Speedtest..."
+speedtest-cli
+
