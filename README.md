@@ -1,70 +1,53 @@
-WireGuard VPN mit Unbound DNS-Server
+# WireGuard VPN Setup – README Version 1
 
-Überblick
+## 📌 Überblick
+Dieses Projekt automatisiert die Einrichtung eines **WireGuard VPN-Servers** mit **Unbound DNS** und einer **iptables-Firewall** auf einem Linux-Server. Das Skript installiert alle benötigten Pakete, konfiguriert den VPN-Server sowie die Firewall-Regeln und erstellt automatisch eine Client-Konfiguration inklusive QR-Code für eine einfache Verbindung.
 
-Dieses Projekt automatisiert die Einrichtung eines WireGuard VPN-Servers mit Unbound DNS und iptables-Firewall auf einem Linux-Server.
+## 🔹 Funktionen des Skripts
+- **Automatische Installation & Konfiguration von WireGuard**
+- **Unbound als DNS-Server für sicheres DNS-Filtering**
+- **Firewall-Regeln mit iptables für sicheren Zugriff**
+- **Automatische Erstellung der WireGuard-Client-Konfiguration**
+- **QR-Code Generierung zur einfachen Verbindung für mobile Geräte**
+- **Änderung des SSH-Ports auf 1337 für mehr Sicherheit**
+- **Anzeige der Client-Konfigurationsdatei am Ende des Setups**
+- **Automatische Durchführung eines Speedtests**
+- **Aktivierung der deutschen Tastaturbelegung**
 
-Funktionen
-
-WireGuard VPN wird automatisch installiert und konfiguriert.
-
-Unbound als DNS-Server, um eine sichere Namensauflösung bereitzustellen.
-
-Firewall-Regeln mit iptables, um sicheren Zugriff zu gewährleisten.
-
-Automatische Erstellung der WireGuard-Client-Konfiguration.
-
-QR-Code Generierung, um Clients einfach zu verbinden.
-
-SSH-Port Änderung auf 1337 zur Erhöhung der Sicherheit.
-
-Automatische Anzeige der Client-Konfiguration nach der Installation.
-
-Speedtest-Unterstützung, um die Verbindungsgeschwindigkeit zu überprüfen.
-
-Deutsche Tastaturbelegung wird aktiviert.
-
-Installation & Nutzung
-
-Voraussetzungen
-
-Ein Linux-Server mit Debian oder Ubuntu.
-
-Root-Rechte zur Ausführung des Skripts.
-
-Skript ausführen
-
-Führe das Skript mit Root-Rechten aus:
-
+## 📥 Installation & Nutzung
+Das Skript kann direkt von GitHub heruntergeladen und ausgeführt werden:
+```bash
+sudo apt install -y git && git clone https://github.com/DEIN-GITHUB-USERNAME/wireguard-vpn-setup.git
+cd wireguard-vpn-setup
 sudo bash setup-wireguard.sh
+```
+Nach der Installation wird die **Client-Konfiguration (`wg-client.conf`)** automatisch angezeigt und kann direkt genutzt oder per QR-Code gescannt werden.
 
-Nach der Installation wird die WireGuard-Client-Konfiguration automatisch ausgegeben, sodass du sie kopieren kannst.
-
-WireGuard-Client verbinden
-
-Die generierte Datei wg-client.conf kann direkt in den WireGuard-Client importiert werden.
-Falls du ein mobiles Gerät nutzt, kannst du den QR-Code scannen, der am Ende der Installation angezeigt wird.
-
-Firewall & Sicherheit
-
-Das Skript setzt automatisch iptables-Regeln, um den VPN- und SSH-Zugriff abzusichern. Falls gewünscht, können weitere Regeln manuell hinzugefügt werden.
-
-Fehlerbehebung
-
-Falls Unbound oder WireGuard nicht starten:
-
+## 🛠 Fehlerbehebung & Debugging
+Falls Unbound oder WireGuard nicht korrekt starten, können folgende Befehle zur Überprüfung genutzt werden:
+```bash
 sudo systemctl status unbound
 sudo systemctl status wg-quick@wg0
-
-Falls der SSH-Zugriff verloren geht, kann er über die Konsole des Hosters wiederhergestellt werden:
-
+```
+Falls der SSH-Zugriff verloren geht, kann er über die Server-Konsole wiederhergestellt werden:
+```bash
 sudo nano /etc/ssh/sshd_config
+```
+Hier den **Port zurück auf `22` setzen** und SSH neu starten:
+```bash
+sudo systemctl restart ssh
+```
+Falls der VPN-Tunnel keine Verbindung hat, überprüfe die Firewall-Regeln:
+```bash
+sudo iptables -L -v -n
+```
+Oder teste die Geschwindigkeit mit:
+```bash
+speedtest-cli
+```
 
-Dort den Port zurück auf 22 setzen und SSH neu starten.
+---
+Dieses Projekt steht unter der **MIT-Lizenz** und kann frei verwendet und angepasst werden.
 
-Lizenz
-
-Dieses Projekt steht unter der MIT-Lizenz. Du kannst es frei nutzen und anpassen.
-
-Erstellt von ChatGPT 🚀
+**Erstellt von ChatGPT** 🚀
 
