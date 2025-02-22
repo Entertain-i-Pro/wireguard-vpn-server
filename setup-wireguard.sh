@@ -138,8 +138,10 @@ netfilter-persistent save
 echo "🔄 12. SSH-Dienst neu starten..."
 systemctl restart ssh
 
-echo "✅ Setup abgeschlossen! Dein WireGuard-VPN mit Unbound-DNS läuft jetzt!"
-
-echo "🚀 Starte Speedtest..."
+echo "🚀 13. Speedtest ausführen..."
 speedtest-cli
 
+echo "📜 14. WireGuard-Client Konfiguration anzeigen..."
+cat /etc/wireguard/wg-client.conf
+
+echo "✅ Setup abgeschlossen! Dein WireGuard-VPN mit Unbound-DNS läuft jetzt!"
