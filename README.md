@@ -17,7 +17,7 @@ Dieses Projekt automatisiert die Einrichtung eines **WireGuard VPN-Servers** mit
 ## 📥 Installation & Nutzung
 Das Skript kann direkt von GitHub heruntergeladen und ausgeführt werden:
 ```bash
-sudo apt install -y git && git clone https://github.com/DEIN-GITHUB-USERNAME/wireguard-vpn-setup.git
+sudo apt install -y git && git clone https://github.com/Entertain-i-Pro/wireguard-vpn-setup-script-v1
 cd wireguard-vpn-setup
 sudo bash setup-wireguard.sh
 ```
@@ -48,6 +48,3 @@ speedtest-cli
 
 ---
 Dieses Projekt steht unter der **MIT-Lizenz** und kann frei verwendet und angepasst werden.
-
-**Erstellt von ChatGPT** 🚀
-
