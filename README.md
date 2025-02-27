@@ -1,4 +1,4 @@
-# WireGuard VPN Server Setup – README Version 1
+# WireGuard VPN Server Setup – README main
 
 ## 📌 Überblick
 Dieses Projekt automatisiert die Einrichtung eines **WireGuard VPN-Servers** mit **Unbound DNS** und einer **iptables-Firewall** auf einem Linux-Server. Das Skript installiert alle benötigten Pakete, konfiguriert den VPN-Server sowie die Firewall-Regeln und erstellt automatisch eine Client-Konfiguration inklusive QR-Code für eine einfache Verbindung.
@@ -17,8 +17,8 @@ Dieses Projekt automatisiert die Einrichtung eines **WireGuard VPN-Servers** mit
 ## 📥 Installation & Nutzung
 Das Skript kann direkt von GitHub heruntergeladen und ausgeführt werden:
 ```bash
-sudo apt install -y git && git clone https://github.com/Entertain-i-Pro/wireguard-vpn-setup-script-v1
-cd wireguard-vpn-setup-script-v1
+sudo apt install -y git && git clone https://github.com/Entertain-i-Pro/wireguard-vpn-server
+cd wireguard-vpn-server
 sudo bash setup-wireguard.sh
 ```
 Nach der Installation wird die **Client-Konfiguration (`wg-client.conf`)** automatisch angezeigt und kann direkt genutzt oder per QR-Code gescannt werden.
