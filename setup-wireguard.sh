@@ -1,11 +1,9 @@
 #!/bin/bash
 
-# WireGuard & Firewall-Setup mit SSH-Port-Änderung & Unbound DNS-Server
+# WireGuard & Firewall-Setup mit SSH-Port-Änderung, Unbound DNS-Server & Pi-hole
+# Version 2 – Mit Pi-hole Integration
 # Erstellt von ChatGPT
-#
-# Dieses Skript installiert und konfiguriert automatisch einen sicheren WireGuard VPN-Server mit Unbound DNS.
-# Es richtet außerdem eine Firewall mit iptables ein und stellt sicher, dass der SSH-Zugriff über Port 1337 läuft.
-#
+
 # Deutsche Tastatur aktivieren
 loadkeys de
 
@@ -21,15 +19,17 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-echo "📸 1. Unbound installieren & einrichten..."
-apt update && apt install -y unbound dnsutils speedtest-cli
+echo "📸 1. Unbound & Pi-hole installieren..."
+apt update && apt install -y unbound dnsutils speedtest-cli curl
 
-cat <<EOF > /etc/unbound/unbound.conf.d/wireguard.conf
+# Unbound konfigurieren
+cat <<EOF > /etc/unbound/unbound.conf.d/pi-hole.conf
 server:
-    interface: 0.0.0.0
-    access-control: 10.0.0.0/24 allow
-    access-control: 127.0.0.0/8 allow
+    port: 5335
+    do-ip4: yes
     do-ip6: no
+    do-udp: yes
+    do-tcp: yes
     root-hints: "/var/lib/unbound/root.hints"
     cache-min-ttl: 3600
     cache-max-ttl: 86400
@@ -53,7 +53,13 @@ if ! systemctl is-active --quiet unbound; then
     exit 1
 fi
 
-echo "📌 2. WireGuard & benötigte Pakete installieren..."
+# Pi-hole Installation
+curl -sSL https://install.pi-hole.net | bash
+
+# Pi-hole DNS auf Unbound setzen
+pihole -a setdns 127.0.0.1#5335
+
+# WireGuard Installation
 apt install -y wireguard iptables-persistent
 
 echo "🔑 3. WireGuard Schlüssel für Server & Client generieren..."
@@ -144,4 +150,4 @@ speedtest-cli
 echo "📜 14. WireGuard-Client Konfiguration anzeigen..."
 cat /etc/wireguard/wg-client.conf
 
-echo "✅ Setup abgeschlossen! Dein WireGuard-VPN mit Unbound-DNS läuft jetzt!"
+echo "✅ Setup abgeschlossen! Dein WireGuard-VPN mit Unbound-DNS & Pi-hole läuft jetzt!"
