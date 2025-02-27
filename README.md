@@ -1,4 +1,4 @@
-# WireGuard VPN Setup – README Version 2
+# WireGuard VPN Server Setup – README sub
 
 ## 📌 Überblick
 Dieses Projekt automatisiert die Einrichtung eines **WireGuard VPN-Servers** mit **Unbound DNS** und **Pi-hole als Werbeblocker**. Das Skript installiert alle benötigten Pakete, konfiguriert den VPN-Server sowie die Firewall-Regeln und erstellt automatisch eine Client-Konfiguration inklusive QR-Code für eine einfache Verbindung.
