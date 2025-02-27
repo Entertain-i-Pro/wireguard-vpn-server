@@ -1,4 +1,4 @@
-# WireGuard VPN Setup – README Version 1
+# WireGuard VPN Server Setup – README Version 1
 
 ## 📌 Überblick
 Dieses Projekt automatisiert die Einrichtung eines **WireGuard VPN-Servers** mit **Unbound DNS** und einer **iptables-Firewall** auf einem Linux-Server. Das Skript installiert alle benötigten Pakete, konfiguriert den VPN-Server sowie die Firewall-Regeln und erstellt automatisch eine Client-Konfiguration inklusive QR-Code für eine einfache Verbindung.
