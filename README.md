@@ -19,7 +19,7 @@ Das Skript kann direkt von GitHub heruntergeladen und ausgeführt werden:
 ```bash
 sudo apt install -y git && git clone https://github.com/Entertain-i-Pro/wireguard-vpn-server
 cd wireguard-vpn-server
-sudo bash setup-wireguard.sh
+sudo bash setup-wireguard-vpn-server.sh
 ```
 Nach der Installation wird die **Client-Konfiguration (`wg-client.conf`)** automatisch angezeigt und kann direkt genutzt oder per QR-Code gescannt werden.
 
