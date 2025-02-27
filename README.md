@@ -18,9 +18,9 @@ Dieses Projekt automatisiert die Einrichtung eines **WireGuard VPN-Servers** mit
 ## 📥 Installation & Nutzung
 Das Skript kann direkt von GitHub heruntergeladen und ausgeführt werden:
 ```bash
-sudo apt install -y git && git clone https://github.com/Entertain-i-Pro/wireguard-vpn-setup-script-v2.git
-cd wireguard-vpn-setup-script-v2
-sudo bash setup-wireguard-v2.sh
+sudo apt install -y git && git clone https://github.com/Entertain-i-Pro/wireguard-vpn-server/blob/sub/setup-wireguard-vpn-server.sh
+cd wireguard-vpn-server
+sudo bash setup-wireguard-vpn-server.sh
 ```
 Nach der Installation wird die **Client-Konfiguration (`wg-client.conf`)** automatisch angezeigt und kann direkt genutzt oder per QR-Code gescannt werden.
 
