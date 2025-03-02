@@ -11,9 +11,9 @@ Dieses Skript installiert und konfiguriert **WireGuard VPN**, **Unbound** (rekur
 ## 👁 Installation
 ### 1. Skript herunterladen und ausführen
 ```bash
-wget https://example.com/setup-wireguard-bind.sh -O setup-wireguard-bind.sh
-chmod +x setup-wireguard-bind.sh
-sudo ./setup-wireguard-bind.sh
+sudo apt install -y wget && wget https://raw.githubusercontent.com/Entertain-i-Pro/wireguard-vpn-server/sub---BIND/setup-wireguard-vpn-server.sh
+chmod +x setup-wireguard-vpn-server.sh
+sudo bash setup-wireguard-vpn-server.sh
 ```
 
 ### 2. Nach der Installation
