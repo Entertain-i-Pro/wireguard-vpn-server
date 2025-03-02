@@ -36,7 +36,7 @@ apt-get update
 check_success "Paketlisten aktualisiert"
 
 echo "📦 Installiere WireGuard, Unbound, BIND9 & QRencode..."
-apt-get install -y wireguard unbound bind9 qrencode
+apt-get install -y wireguard unbound qrencode dnsutils speedtest-cli git curl wget qrencode
 check_success "Pakete erfolgreich installiert"
 
 # SSH-Port ändern (nur wenn nötig)
