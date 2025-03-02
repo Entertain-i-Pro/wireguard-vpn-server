@@ -22,7 +22,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 echo "📸 1. Unbound installieren & einrichten..."
-apt update && apt install -y unbound dnsutils speedtest-cli
+apt update && apt install -y unbound dnsutils speedtest-cli git curl wget
 
 cat <<EOF > /etc/unbound/unbound.conf.d/wireguard.conf
 server:
@@ -54,7 +54,7 @@ if ! systemctl is-active --quiet unbound; then
 fi
 
 echo "📌 2. WireGuard & benötigte Pakete installieren..."
-apt install -y wireguard iptables-persistent
+apt install -y wireguard iptables-persistent qrencode 
 
 echo "🔑 3. WireGuard Schlüssel für Server & Client generieren..."
 mkdir -p /etc/wireguard
