@@ -1,50 +1,56 @@
-# WireGuard VPN Server Setup – README main
+# WireGuard + Unbound + BIND Setup
 
-## 📌 Überblick
-Dieses Projekt automatisiert die Einrichtung eines **WireGuard VPN-Servers** mit **Unbound DNS** und einer **iptables-Firewall** auf einem Linux-Server. Das Skript installiert alle benötigten Pakete, konfiguriert den VPN-Server sowie die Firewall-Regeln und erstellt automatisch eine Client-Konfiguration inklusive QR-Code für eine einfache Verbindung.
+## ✨ Was macht dieses Skript?
+Dieses Skript installiert und konfiguriert **WireGuard VPN**, **Unbound** (rekursiver DNS-Resolver) und **BIND9** (DNS-Server) auf einem Linux-Server.
 
-## 🔹 Funktionen des Skripts
-- **Automatische Installation & Konfiguration von WireGuard**
-- **Unbound als DNS-Server für sicheres DNS-Filtering**
-- **Firewall-Regeln mit iptables für sicheren Zugriff**
-- **Automatische Erstellung der WireGuard-Client-Konfiguration**
-- **QR-Code Generierung zur einfachen Verbindung für mobile Geräte**
-- **Änderung des SSH-Ports auf 1337 für mehr Sicherheit**
-- **Anzeige der Client-Konfigurationsdatei am Ende des Setups**
-- **Automatische Durchführung eines Speedtests**
-- **Aktivierung der deutschen Tastaturbelegung**
+- **WireGuard:** Sichere VPN-Verbindung einrichten.
+- **Unbound:** Schnelle DNS-Weiterleitung und Caching.
+- **BIND9:** DNS-Server, der Anfragen an Unbound weiterleitet.
+- **Automatische Überprüfung:** Stellt sicher, dass alle Dienste erfolgreich starten.
 
-## 📥 Installation & Nutzung
-Das Skript kann direkt von GitHub heruntergeladen und ausgeführt werden:
+## 👁 Installation
+### 1. Skript herunterladen und ausführen
 ```bash
-sudo apt install -y wget && wget https://raw.githubusercontent.com/Entertain-i-Pro/wireguard-vpn-server/main/setup-wireguard-vpn-server.sh
-chmod +x setup-wireguard-vpn-server.sh
-sudo bash setup-wireguard-vpn-server.sh
-```
-Nach der Installation wird die **Client-Konfiguration (`wg-client.conf`)** automatisch angezeigt und kann direkt genutzt oder per QR-Code gescannt werden.
-
-## 🛠 Fehlerbehebung & Debugging
-Falls Unbound oder WireGuard nicht korrekt starten, können folgende Befehle zur Überprüfung genutzt werden:
-```bash
-sudo systemctl status unbound
-sudo systemctl status wg-quick@wg0
-```
-Falls der SSH-Zugriff verloren geht, kann er über die Server-Konsole wiederhergestellt werden:
-```bash
-sudo nano /etc/ssh/sshd_config
-```
-Hier den **Port zurück auf `22` setzen** und SSH neu starten:
-```bash
-sudo systemctl restart ssh
-```
-Falls der VPN-Tunnel keine Verbindung hat, überprüfe die Firewall-Regeln:
-```bash
-sudo iptables -L -v -n
-```
-Oder teste die Geschwindigkeit mit:
-```bash
-speedtest-cli
+wget https://example.com/setup-wireguard-bind.sh -O setup-wireguard-bind.sh
+chmod +x setup-wireguard-bind.sh
+sudo ./setup-wireguard-bind.sh
 ```
 
----
-Dieses Projekt steht unter der **MIT-Lizenz** und kann frei verwendet und angepasst werden.
+### 2. Nach der Installation
+Die Konfigurationsdateien befinden sich hier:
+- **WireGuard:** `/etc/wireguard/wg0.conf`
+- **Unbound:** `/etc/unbound/unbound.conf`
+- **BIND9:** `/etc/bind/named.conf.options`
+
+## ✅ Status überprüfen
+Nach der Installation kannst du die wichtigsten Dienste überprüfen:
+```bash
+systemctl status wireguard
+systemctl status unbound
+systemctl status bind9
+```
+Falls ein Dienst nicht läuft:
+```bash
+sudo systemctl restart <dienstname>
+```
+
+## 🔧 Debugging
+Falls DNS-Anfragen nicht funktionieren, teste sie mit:
+```bash
+dig @127.0.0.1 google.com  # Teste BIND
+
+dig @127.0.0.1 -p 5353 google.com  # Teste Unbound
+```
+Logs anzeigen für Fehleranalyse:
+```bash
+journalctl -xeu wireguard
+journalctl -xeu unbound
+journalctl -xeu bind9
+```
+
+## ✨ Fertig!
+Die WireGuard-Client-Konfigurationsdatei findest du unter:
+```bash
+/etc/wireguard/client.conf
+```
+Scanne den QR-Code oder kopiere die Datei für dein Gerät. Viel Spaß mit deinem sicheren VPN! 🚀
